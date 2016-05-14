@@ -111,27 +111,26 @@
 	{
 		NodeList *openList	= new NodeList();
 		NodeList *closeList	= new NodeList(), *neighborNode;
-		int x, y, previousCost, heuristicCost, i, xNeighbor, yNeighbor;
+		int x, y, previousX, previousY, previousCost, heuristicCost, i, xNeighbor, yNeighbor;
 		char neighborShiftX[] = NEIGHBOR_SHIFT_X;
 		char neighborShiftY[] = NEIGHBOR_SHIFT_Y;
 
-		openList->insert(this->initialPositionX, this->initialPositionY, 0, this->heuristic(this->initialPositionX, this->initialPositionY));
-int z = 0;
+		openList->insert(this->initialPositionX, this->initialPositionY, -1, -1, 0, this->heuristic(this->initialPositionX, this->initialPositionY));
+
 		while(!openList->isEmpty())
 		{
-printf("---------------------------\n");
-openList->print();
-			openList->popFirst(&x, &y, &previousCost, &heuristicCost);
-openList->print();
-if (z == 5) exit(0);
-z ++;
-printf("---------------------------\n");
+			openList->popFirst(&x, &y, &previousX, &previousY, &previousCost, &heuristicCost);
+			closeList->insert(x, y, previousX, previousY, previousCost, heuristicCost);
 			if (this->isFinalPoint(x, y))
 			{
-				this->pathList = this->buildPath(closeList);
+
+				this->pathList = this->buildPath(closeList, x, y);
+				openList->freeList();
+				closeList->freeList();
+				delete openList;
+				delete closeList;
 				return 1;
 			}
-			closeList->insert(x, y, previousCost, heuristicCost);
 			for (i =0; i<NBR_NEIGHBOR; i++)
 			{
 				xNeighbor = x + neighborShiftX[i];
@@ -145,19 +144,17 @@ printf("---------------------------\n");
 					continue;
 				}
 
-				int	neighborHeuristic	= previousCost + this->heuristic(xNeighbor, yNeighbor);
-				int	neighborCost		= this->getCellValue(xNeighbor, yNeighbor);
-				if (!openList->isInList(xNeighbor, yNeighbor, &neighborNode))
+				int	neighborHeuristic	= this->heuristic(xNeighbor, yNeighbor);
+				int	neighborCost		= previousCost + this->getCellValue(xNeighbor, yNeighbor);
+				bool test				= openList->isInList(xNeighbor, yNeighbor, &neighborNode);
+				if (!test)
 				{
-					openList->insert(xNeighbor, yNeighbor, neighborCost, neighborHeuristic);
+					openList->insert(xNeighbor, yNeighbor, x, y, neighborCost, neighborHeuristic);
 				}
-				else
+				else if (neighborNode->getPreviousCost() > neighborCost)
 				{
-					if (neighborNode->getPreviousCost() > neighborCost)
-					{
-						neighborNode->setPreviousCost(neighborCost);
-						neighborNode->setPreviousPoint(x, y);
-					}
+					neighborNode->setPreviousCost(neighborCost);
+					neighborNode->setPreviousPoint(x, y);
 				}
 			}
 		}
@@ -214,7 +211,12 @@ printf("---------------------------\n");
 			std::cout << "\t";
 			for(x=0; x<this->dimX; x++)
 			{
-				std::cout << this->getCellValue(x, y) << " ";
+				if (this->isInitialPoint(x, y))
+					std::cout << CHAR_INITIAL << " ";
+				else if (this->isFinalPoint(x, y))
+					std::cout << CHAR_FINAL << " ";
+				else
+					std::cout << this->getCellValue(x, y) << " ";
 			}
 			std::cout << "\n";
 		}
@@ -233,14 +235,18 @@ printf("---------------------------\n");
 		}
 		else
 		{
-			std::cout << "- Optimal path in term of distance and quality";
+			std::cout << "- Optimal path in term of distance and quality\n";
 			int x, y;
 			for(y=0; y<this->dimY; y++)
 			{
 				std::cout << "\t";
 				for(x=0; x<this->dimX; x++)
 				{
-					if (this->isInPath(x, y))
+					if (this->isInitialPoint(x, y))
+						std::cout << CHAR_INITIAL << " ";
+					else if (this->isFinalPoint(x, y))
+						std::cout << CHAR_FINAL << " ";
+					else if (this->isInPath(x, y))
 						std::cout << CHAR_PATH << " ";
 					else
 						std::cout << this->getCellValue(x, y) << " ";
@@ -253,23 +259,24 @@ printf("---------------------------\n");
 // -----------------------------
 // Auxiliary methods
 // -----------------------------
-	PathList* Environment::buildPath(NodeList *closeList)
+	PathList* Environment::buildPath(NodeList *closeList, int x, int y)
 	{
-		int x = closeList->getPointX();
-		int y = closeList->getPointY();
 		PathList *res = new PathList(x, y);
 		NodeList *previousNodeList = NULL;
 
+		if (!this->isInEnvironment(x, y))
+			printFatalError("buildPath", "Point out of the environment");
+
 		if (!this->isInitialPoint(x, y))
 		{
-			int previousPointX = closeList->getPreviousPointX();
-			int previousPointY = closeList->getPreviousPointY();
-			char test = closeList->isInList(previousPointX, previousPointY, &previousNodeList);
+			char test = closeList->isInList(x, y, &previousNodeList);
 			if (!test)
 			{
 				printFatalError("buildPath", "Can't find the previous point");
 			}
-			res->next = this->buildPath(previousNodeList);
+			int previousPointX = previousNodeList->getPreviousPointX();
+			int previousPointY = previousNodeList->getPreviousPointY();
+			res->next = this->buildPath(closeList, previousPointX, previousPointY);
 		}
 
 		return res;

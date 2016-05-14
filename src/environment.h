@@ -24,6 +24,8 @@
 
 #define CHAR_OBSTACLE		'0'
 #define CHAR_PATH			'+'
+#define CHAR_INITIAL		'I'
+#define CHAR_FINAL			'F'
 
 
 class Environment
@@ -75,7 +77,7 @@ class Environment
 // Auxiliary methods
 // -----------------------------
 	private:
-		PathList*	buildPath		(NodeList *closeList);
+		PathList*	buildPath		(NodeList *closeList, int x, int y);
 		char		isInPath		(int x, int y);
 };
 

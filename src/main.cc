@@ -2,7 +2,7 @@
 #include <string.h>
 
 
-#define ENVIRONMENT_DEFAULT	"resource/environment_default.txt"
+#define ENVIRONMENT_DEFAULT	"resource/default"
 
 #define COMMANDE_SET_ENV			"set_env"
 #define COMMANDE_SET_LIMIT_POINT	"set_limit_point"
@@ -22,21 +22,22 @@ int main()
 	int yFin	= 0;
 
 	env->setObjective(xInit, yInit, xFin, yFin);
-printf("111111\n");
 	test = env->findPath();
-printf("222222\n");
 	while (true)
 	{
 		if (!test)
 		{
-			std::cout << "The objective is not reachable\n";
+			std::cout << "The objective is not reachable\n\n";
 		}
-		std::cout << "Please enter on of the commands:\n";
+		std::cout << "\n\n-----------------------------------------\n";
+		std::cout << "Please enter one of the commands:\n";
+		std::cout << "\t- " << COMMANDE_PRINT << "\n";
 		std::cout << "\t- " << COMMANDE_SET_ENV << "\n";
 		std::cout << "\t- " << COMMANDE_SET_LIMIT_POINT << "\n";
-		std::cout << "\t- " << COMMANDE_PRINT << "\n";
+		std::cout << "\n\n\tChoice: ";
 
 		scanf("%s", command);
+		std::cout << "\n";
 		if (!strcmp(command, COMMANDE_SET_ENV))
 		{
 			scanf("%s", command);

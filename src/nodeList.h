@@ -40,8 +40,8 @@ class NodeList
 // Getter/Setter
 // -----------------------------
 	public:
-		char	isInList			(int x, int y, NodeList **resultList);
-		char	isEmpty				();
+		bool	isInList			(int x, int y, NodeList **resultList);
+		bool	isEmpty				();
 		int		getPreviousCost		();
 		int		getPointX			();
 		int		getPointY			();
@@ -54,9 +54,10 @@ class NodeList
 // Local methods
 // -----------------------------
 	public:
-		void	insert			(int x, int y, int prevCost, int heurCost);
-		void	popFirst		(int *x, int *y, int *prevCost, int *heurCost);
+		void	insert			(int x, int y, int previousX, int previousY, int prevCost, int heurCost);
+		void	popFirst		(int *x, int *y, int *previousX, int *previousY, int *prevCost, int *heurCost);
 		void	print			();
+		void	freeList		();
 };
 
 

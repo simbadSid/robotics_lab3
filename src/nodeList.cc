@@ -36,31 +36,29 @@
 
 	NodeList::~NodeList()
 	{
-		if (this->next != NULL)
-			delete this->next;
 	}
 
 // -----------------------------
 // Getter/Setter
 // -----------------------------
-	char NodeList::isInList(int x, int y, NodeList **resultList)
+	bool NodeList::isInList(int x, int y, NodeList **resultList)
 	{
 		if ((x == this->pointX) && (y == this->pointY))
 		{
 			if (resultList != NULL)
 				*resultList = this;
-			return 1;
+			return true;
 		}
 		if (this->next == NULL)
-			return 0;
+			return false;
 
-		return this->next->isEmpty();
+		return this->next->isInList(x, y, resultList);
 	}
 
-	char NodeList::isEmpty()
+	bool NodeList::isEmpty()
 	{
 		if (this->next != NULL)
-			return 0;
+			return false;
 
 		return (this->pointX == -1);
 	}
@@ -104,39 +102,36 @@
 // -----------------------------
 // Local methods
 // -----------------------------
-	void NodeList::insert(int x, int y, int prevCost, int heurCost)
+	void NodeList::insert(int x, int y, int previousX, int previousY, int prevCost, int heurCost)
 	{
 		if ((this->pointX != -1) && (prevCost > this->previousCost))
 		{
 			if (this->next == NULL)
 				this->next = new NodeList();
-			this->next->insert(x, y, prevCost, heurCost);
+			this->next->insert(x, y, previousX, previousY, prevCost, heurCost);
 		}
 		else
 		{
-			NodeList *newNode;
-			if(this->next == NULL)
-				newNode = NULL;
-			else
-			{
-				newNode 		= new NodeList(this);
-				newNode->next	= this->next;
-			}
+			NodeList *newNode = new NodeList(this);
 			this->pointX		= x;
 			this->pointY		= y;
+			this->previousPointX= previousX;
+			this->previousPointY= previousY;
 			this->previousCost	= prevCost;
 			this->heuristicCost	= heurCost;
 			this->next			= newNode;
 		}
 	}
 
-	void NodeList::popFirst(int *x, int *y, int *prevCost, int *heurCost)
+	void NodeList::popFirst(int *x, int *y, int *previousX, int *previousY, int *prevCost, int *heurCost)
 	{
 		if (this->isEmpty())
 			printFatalError("NodeList::popFirst", "Empty list");
 
 		*x			= this->pointX;
 		*y			= this->pointY;
+		*previousX	= this->previousPointX;
+		*previousY	= this->previousPointY;
 		*prevCost	= this->previousCost;
 		*heurCost	= this->heuristicCost;
 
@@ -144,6 +139,8 @@
 		{
 			this->pointX		= -1;
 			this->pointY		= -1;
+			this->previousPointX= -1;
+			this->previousPointY= -1;
 			this->previousCost	= -1;
 			this->heuristicCost	= -1;
 		}
@@ -152,6 +149,8 @@
 			NodeList *tmpNext = this->next;
 			this->pointX		= this->next->pointX;
 			this->pointY		= this->next->pointY;
+			this->previousPointX= this->next->previousPointX;
+			this->previousPointY= this->next->previousPointY;
 			this->previousCost	= this->next->previousCost;
 			this->heuristicCost	= this->next->heuristicCost;
 			this->next			= this->next->next;
@@ -167,4 +166,11 @@
 
 		if (this->next != NULL)
 			this->next->print();
+	}
+
+	void NodeList::freeList()
+	{
+		if (this->next != NULL)
+			this->next->freeList();
+		delete this->next;
 	}
