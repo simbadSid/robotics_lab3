@@ -60,6 +60,8 @@
 			printFatalError("SetObjective", "Initial point out of the environment");
 		if (!this->isInEnvironment(finalX, finalY))
 			printFatalError("SetObjective", "Final point out of the environment");
+		if (this->isObstacle(initialX, initialY))
+			printFatalError("SetObjective", "Initial point on obstacle");
 
 		this->initialPositionX	= initialX;
 		this->initialPositionY	= initialY;
@@ -231,7 +233,7 @@
 		}
 		if (this->pathList == NULL)
 		{
-			std::cout << "- No path computed";
+			std::cout << "- No path computed\n";
 		}
 		else
 		{
@@ -265,7 +267,9 @@
 		NodeList *previousNodeList = NULL;
 
 		if (!this->isInEnvironment(x, y))
+		{
 			printFatalError("buildPath", "Point out of the environment");
+		}
 
 		if (!this->isInitialPoint(x, y))
 		{

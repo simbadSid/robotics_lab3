@@ -9,19 +9,24 @@
 #define COMMANDE_PRINT				"print"
 
 
+void defaultInitialization(Environment *env)
+{
+	int xInit, yInit, xFin, yFin;
 
-
+	xInit	= env->getDimX()-1;
+	yInit	= env->getDimY()-1;
+	xFin	= 0;
+	yFin	= 0;
+	env->setObjective(xInit, yInit, xFin, yFin);
+}
 
 int main()
 {
 	Environment *env = new Environment(ENVIRONMENT_DEFAULT);
+	int xInit, yInit, xFin, yFin;
 	char command[100], test;
-	int xInit	= env->getDimX()-1;
-	int yInit	= env->getDimY()-1;
-	int xFin	= 0;
-	int yFin	= 0;
 
-	env->setObjective(xInit, yInit, xFin, yFin);
+	defaultInitialization(env);
 	test = env->findPath();
 	while (true)
 	{
@@ -40,9 +45,11 @@ int main()
 		std::cout << "\n";
 		if (!strcmp(command, COMMANDE_SET_ENV))
 		{
+			std::cout << "\tName of the environment file: ";
 			scanf("%s", command);
 			delete env;
 			env = new Environment(command);
+			defaultInitialization(env);
 			test = env->findPath();
 		}
 		else if (!strcmp(command, COMMANDE_SET_LIMIT_POINT))
